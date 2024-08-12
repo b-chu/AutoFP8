@@ -10,6 +10,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .config import BaseQuantizeConfig
 
+import logging
+log = logging.getLogger(__name__)
 
 # HACK: Override the dtype_byte_size function in transformers to support float8 types
 # Fix is posted upstream https://github.com/huggingface/transformers/pull/30488
@@ -227,8 +229,12 @@ def quantize_weights(
     model: AutoModelForCausalLM,
     quantize_config: BaseQuantizeConfig,
 ):
+    log.warning('quantizing weights')
     named_modules = list(model.named_modules())
     for name, linear in tqdm.tqdm(named_modules, desc="Quantizing weights"):
+        # log.warning(f'{name=}')
+        # import psutil
+        # print(psutil.virtual_memory())
         if (
             not isinstance(linear, torch.nn.Linear)
             or name in quantize_config.ignored_layers
@@ -251,6 +257,7 @@ def quantize_activations(
     quantize_config: BaseQuantizeConfig,
     calibration_tokens,
 ):
+    log.warning('quantizing activations')
     # Replace weight quantizer with a dynamic activation quantizer observer
     for name, dynamic_quant_linear in model.named_modules():
         if (

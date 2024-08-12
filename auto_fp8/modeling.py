@@ -11,6 +11,9 @@ from auto_fp8.quantize import (
     save_quantized_model,
 )
 
+import logging
+log = logging.getLogger(__name__)
+
 
 class AutoFP8ForCausalLM:
     def __init__(
@@ -113,6 +116,7 @@ class AutoFP8ForCausalLM:
         quantize_weights(self.model, self.quantize_config)
 
         if self.quantize_config.activation_scheme == "static":
+            log.warning('static quantization')
             assert (
                 calibration_tokens is not None
             ), "Calibration tokens required for activation quantization"
